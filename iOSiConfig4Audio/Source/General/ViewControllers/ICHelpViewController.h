@@ -6,10 +6,12 @@
 */
 
 #import <UIKit/UIKit.h>
+#import <WebKit/WebKit.h>
 
 @interface ICHelpViewController : UIViewController
 
-@property(strong, nonatomic) IBOutlet UIWebView *webView;
+@property(strong, nonatomic) IBOutlet UIView *webViewContainer;
+@property(strong, nonatomic) WKWebView *webView;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil
                bundle:(NSBundle *)nibBundleOrNil

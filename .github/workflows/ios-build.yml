@@ -1,8 +1,8 @@
-name: Check iOS build.
+name: Build app for Mac M1
 
 on:
   push:
-    branches: [ci-build-ios]
+    branches: [ci-build-mac-m1]
 
 permissions:
   contents: read
@@ -22,32 +22,46 @@ jobs:
             -o "$RUNNER_TEMP/boost.tar.gz"
           tar -xzf "$RUNNER_TEMP/boost.tar.gz" -C "$RUNNER_TEMP"
 
-      - name: Build reConfig4Audio
+      - name: Build reConfig4Audio for Apple silicon Macs
         run: |
           xcodebuild \
             -project iOSiConfig4Audio/reConfig4Audio.xcodeproj \
-            -target reConfig4Audio \
+            -scheme reConfig4Audio-Mac \
             -configuration Debug \
-            -sdk iphoneos \
+            -destination 'platform=macOS,variant=Mac Catalyst,arch=arm64' \
+            SUPPORTS_MACCATALYST=YES \
+            IPHONEOS_DEPLOYMENT_TARGET=15.0 \
+            MACOSX_DEPLOYMENT_TARGET=12.0 \
             ARCHS=arm64 \
             ONLY_ACTIVE_ARCH=NO \
             CODE_SIGNING_ALLOWED=NO \
-            "CONFIGURATION_BUILD_DIR=$RUNNER_TEMP/ios-build" \
+            "CONFIGURATION_BUILD_DIR=$RUNNER_TEMP/mac-build" \
             "HEADER_SEARCH_PATHS=$RUNNER_TEMP/boost_1_76_0" \
             'OTHER_CPLUSPLUSFLAGS=$(inherited) -D_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION' \
+            'OTHER_LDFLAGS=$(inherited) -framework WebKit' \
             build
 
-      - name: Package unsigned iOS app
+      - name: Verify and sign Mac app for local testing
         run: |
-          test -d "$RUNNER_TEMP/ios-build/reConfig4Audio.app"
-          ditto -c -k --sequesterRsrc --keepParent \
-            "$RUNNER_TEMP/ios-build/reConfig4Audio.app" \
-            "$RUNNER_TEMP/reConfig4Audio-unsigned-ios.zip"
+          app_path="$RUNNER_TEMP/mac-build/reConfig4Audio.app"
+          executable_path="$app_path/Contents/MacOS/reConfig4Audio"
+          test -f "$executable_path"
+          lipo -verify_arch arm64 "$executable_path"
+          xcrun vtool -show-build "$executable_path" | tee "$RUNNER_TEMP/mac-platform.txt"
+          grep -q 'platform MACCATALYST' "$RUNNER_TEMP/mac-platform.txt"
+          codesign --force --sign - "$app_path"
+          codesign --verify --strict --verbose=2 "$app_path"
 
-      - name: Upload unsigned iOS app
+      - name: Package Mac app
+        run: |
+          ditto -c -k --sequesterRsrc --keepParent \
+            "$RUNNER_TEMP/mac-build/reConfig4Audio.app" \
+            "$RUNNER_TEMP/reConfig4Audio-mac-arm64.zip"
+
+      - name: Upload Mac M1 app
         uses: actions/upload-artifact@v4
         with:
-          name: reConfig4Audio-unsigned-ios
-          path: ${{ runner.temp }}/reConfig4Audio-unsigned-ios.zip
+          name: reConfig4Audio-mac-arm64
+          path: ${{ runner.temp }}/reConfig4Audio-mac-arm64.zip
           if-no-files-found: error
           retention-days: 7

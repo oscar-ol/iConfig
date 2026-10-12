@@ -28,7 +28,9 @@
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  // Do any additional setup after loading the view from its nib.
+  self.webView = [[WKWebView alloc] initWithFrame:self.webViewContainer.bounds];
+  self.webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+  [self.webViewContainer addSubview:self.webView];
 }
 
 - (void)didReceiveMemoryWarning {
