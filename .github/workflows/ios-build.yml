@@ -2,7 +2,7 @@ name: Check iOS build.
 
 on:
   push:
-    branches: [ci-build-check]
+    branches: [ci-build-ios]
 
 permissions:
   contents: read
