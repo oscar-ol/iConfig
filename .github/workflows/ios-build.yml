@@ -1,4 +1,4 @@
-name: Check iOS build
+name: Check iOS build.
 
 on:
   push:
