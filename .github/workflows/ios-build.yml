@@ -52,7 +52,7 @@ jobs:
           app_path="$RUNNER_TEMP/mac-build/reConfig4Audio.app"
           executable_path="$app_path/Contents/MacOS/reConfig4Audio"
           test -f "$executable_path"
-          lipo -verify_arch arm64 "$executable_path"
+          lipo "$executable_path" -verify_arch arm64
           xcrun vtool -show-build "$executable_path" | tee "$RUNNER_TEMP/mac-platform.txt"
           grep -q 'platform MACCATALYST' "$RUNNER_TEMP/mac-platform.txt"
           codesign --force --sign - "$app_path"
