@@ -32,6 +32,22 @@ jobs:
             ARCHS=arm64 \
             ONLY_ACTIVE_ARCH=NO \
             CODE_SIGNING_ALLOWED=NO \
+            "CONFIGURATION_BUILD_DIR=$RUNNER_TEMP/ios-build" \
             "HEADER_SEARCH_PATHS=$RUNNER_TEMP/boost_1_76_0" \
             'OTHER_CPLUSPLUSFLAGS=$(inherited) -D_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION' \
             build
+
+      - name: Package unsigned iOS app
+        run: |
+          test -d "$RUNNER_TEMP/ios-build/reConfig4Audio.app"
+          ditto -c -k --sequesterRsrc --keepParent \
+            "$RUNNER_TEMP/ios-build/reConfig4Audio.app" \
+            "$RUNNER_TEMP/reConfig4Audio-unsigned-ios.zip"
+
+      - name: Upload unsigned iOS app
+        uses: actions/upload-artifact@v4
+        with:
+          name: reConfig4Audio-unsigned-ios
+          path: ${{ runner.temp }}/reConfig4Audio-unsigned-ios.zip
+          if-no-files-found: error
+          retention-days: 7
