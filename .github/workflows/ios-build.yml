@@ -15,6 +15,13 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: Show available build destinations
+        run: |
+          xcodebuild \
+            -project iOSiConfig4Audio/reConfig4Audio.xcodeproj \
+            -scheme reConfig4Audio-Mac \
+            -showdestinations
+
       - name: Download Boost 1.76
         run: |
           curl --fail --location --retry 3 \
@@ -29,7 +36,6 @@ jobs:
             -scheme reConfig4Audio-Mac \
             -configuration Debug \
             -destination 'platform=macOS,variant=Mac Catalyst,arch=arm64' \
-            SUPPORTS_MACCATALYST=YES \
             IPHONEOS_DEPLOYMENT_TARGET=15.0 \
             MACOSX_DEPLOYMENT_TARGET=12.0 \
             ARCHS=arm64 \
