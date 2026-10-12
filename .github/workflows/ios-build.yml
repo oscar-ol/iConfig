@@ -1,0 +1,36 @@
+name: Check iOS build
+
+on:
+  push:
+    branches: [ci-build-check]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Download Boost 1.76
+        run: |
+          curl --fail --location --retry 3 \
+            https://archives.boost.io/release/1.76.0/source/boost_1_76_0.tar.gz \
+            -o "$RUNNER_TEMP/boost.tar.gz"
+          tar -xzf "$RUNNER_TEMP/boost.tar.gz" -C "$RUNNER_TEMP"
+
+      - name: Build reConfig4Audio
+        run: |
+          xcodebuild \
+            -project iOSiConfig4Audio/reConfig4Audio.xcodeproj \
+            -target reConfig4Audio \
+            -configuration Debug \
+            -sdk iphoneos \
+            ARCHS=arm64 \
+            ONLY_ACTIVE_ARCH=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            "HEADER_SEARCH_PATHS=$RUNNER_TEMP/boost_1_76_0" \
+            build
