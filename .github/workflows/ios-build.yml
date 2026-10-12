@@ -33,4 +33,5 @@ jobs:
             ONLY_ACTIVE_ARCH=NO \
             CODE_SIGNING_ALLOWED=NO \
             "HEADER_SEARCH_PATHS=$RUNNER_TEMP/boost_1_76_0" \
+            'OTHER_CPLUSPLUSFLAGS=$(inherited) -D_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION' \
             build
